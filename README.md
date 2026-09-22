@@ -2,6 +2,10 @@
 
 CyberShield AI is an enterprise decision-making and cyber risk management platform that continuously ingests security telemetry, calculates a deterministic quantified risk score ($0-100$), prioritizes critical remediation actions, optimizes security budgets in Indian Rupees (₹) using a knapsack ROI solver ("Risk-to-Rupee Engine"), and anchors assessment snapshots onto an immutable blockchain audit ledger.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Deployed-000000?style=for-the-badge&logo=vercel)](https://cybershield-ai-green.vercel.app/)
+
+**Live Production URL:** [https://cybershield-ai-green.vercel.app/](https://cybershield-ai-green.vercel.app/)
+
 ---
 
 ## 🚀 Core Architecture & Capabilities
