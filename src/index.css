@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#030712] text-slate-100 font-sans antialiased;
+    background-image: 
+      radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
+      radial-gradient(circle at 85% 85%, rgba(239, 68, 68, 0.04) 0%, transparent 40%),
+      linear-gradient(to bottom, #030712, #0b0f19);
+    min-height: 100vh;
+  }
+}
+
+/* Custom Cyber Glass Cards */
+.cyber-card {
+  @apply bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl transition-all duration-200;
+}
+
+.cyber-card:hover {
+  @apply border-slate-700/80;
+}
+
+.cyber-card-glow {
+  @apply bg-slate-900/80 backdrop-blur-md border border-cyan-500/20 rounded-xl shadow-lg shadow-cyan-950/20 transition-all duration-300;
+}
+
+.cyber-card-glow:hover {
+  @apply border-cyan-500/40 shadow-cyan-900/30;
+}
+
+.cyber-card-critical {
+  @apply bg-slate-900/80 backdrop-blur-md border border-red-500/30 rounded-xl shadow-lg shadow-red-950/20 transition-all duration-300;
+}
+
+.cyber-card-critical:hover {
+  @apply border-red-500/50 shadow-red-900/30;
+}
+
+/* Grid overlay background */
+.cyber-grid-bg {
+  background-size: 32px 32px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090d16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
