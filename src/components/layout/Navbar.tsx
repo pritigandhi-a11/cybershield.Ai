@@ -29,6 +29,7 @@ import { AuditCertificateModal } from '../blockchain/AuditCertificateModal';
 import { HelpGuideModal } from '../common/HelpGuideModal';
 import { SettingsModal } from '../common/SettingsModal';
 import { OrganizationSelector3DModal } from '../3d/OrganizationSelector3DModal';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface NavbarProps {
   activeTab: string;
@@ -113,26 +114,15 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer,
               </button>
             )}
 
-            {/* Brand Logo & Name */}
-            <div className="flex items-center gap-2.5">
-              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
-                <ShieldAlert className="w-4 h-4 animate-pulse" />
-                <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
-              </div>
-              <div className="hidden sm:block">
-                <div className="flex items-center gap-2">
-                  <span className="font-extrabold tracking-tight text-base bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
-                    CyberShield<span className="text-cyan-400">.AI</span>
-                  </span>
-                  <span className="px-1.5 py-0.2 text-[9px] font-mono uppercase font-bold rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
-                    SIH 2026
-                  </span>
-                </div>
-                <p className="text-[10px] text-slate-400 truncate max-w-[220px]">
-                  Continuous Cyber Risk Quantification
-                </p>
-              </div>
-            </div>
+            {/* Official Brand Logo & Name */}
+            <BrandLogo
+              size="sm"
+              showText={true}
+              showSubtitle={true}
+              showBadge={true}
+              badgeText="SIH 2026"
+              onClick={() => setActiveTab('dashboard')}
+            />
 
             {/* Vertical Divider */}
             <div className="hidden xl:block h-6 w-px bg-slate-800" />

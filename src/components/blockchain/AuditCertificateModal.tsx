@@ -2,6 +2,7 @@ import React from 'react';
 import { useSecurity } from '../../context/SecurityContext';
 import { ShieldCheck, X, Award, CheckCircle2, Download, Printer } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface AuditCertificateModalProps {
   isOpen: boolean;
@@ -32,10 +33,8 @@ export const AuditCertificateModal: React.FC<AuditCertificateModalProps> = ({ is
         </button>
 
         {/* Certificate Header */}
-        <div className="text-center pb-4 border-b border-slate-800 print:border-black">
-          <div className="inline-flex p-3 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 mb-2">
-            <Award className="w-8 h-8" />
-          </div>
+        <div className="text-center pb-4 border-b border-slate-800 print:border-black flex flex-col items-center">
+          <BrandLogo size="sm" showBadge={true} badgeText="AUDIT VERIFIED" className="mb-2.5" />
           <h2 className="text-xl font-black text-white print:text-black tracking-tight uppercase">
             Tamper-Evident Cyber Risk Audit Certificate
           </h2>

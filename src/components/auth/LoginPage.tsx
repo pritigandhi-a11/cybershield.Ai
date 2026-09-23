@@ -21,6 +21,7 @@ import {
   Server,
   Globe2
 } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface LoginPageProps {
   onLoginSuccess?: () => void;
@@ -253,22 +254,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
           {/* Top Brand Info */}
           <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-xl shadow-cyan-500/20">
-                <ShieldAlert className="w-6 h-6 animate-pulse" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-cyan-400 animate-ping" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-black tracking-tight text-2xl bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
-                    CyberShield<span className="text-cyan-400">.AI</span>
-                  </span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
-                    SIH 2026
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400 font-medium">3D Enterprise Cyber Risk Command Center</p>
-              </div>
+            <div className="mb-6">
+              <BrandLogo
+                size="lg"
+                showText={true}
+                showSubtitle={true}
+                showBadge={true}
+                badgeText="SIH 2026"
+              />
             </div>
 
             <h2 className="text-2xl lg:text-3xl font-black text-white tracking-tight leading-tight mb-3">
@@ -320,9 +313,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         <div className="lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between bg-slate-950/90 relative">
           <div>
             <div className="mb-6">
-              <h3 className="text-2xl font-bold text-white tracking-tight">Welcome to CyberShield.AI</h3>
+              <div className="mb-2">
+                <BrandLogo size="xs" showBadge={true} badgeText="ENTERPRISE ACCESS" />
+              </div>
+              <h3 className="text-2xl font-bold text-white tracking-tight">Sign In to Command Center</h3>
               <p className="text-xs sm:text-sm text-slate-400 mt-1.5">
-                Sign in to access your organization's 3D continuous cyber risk command center.
+                Access your organization's 3D continuous cyber risk & investment optimization portal.
               </p>
             </div>
 

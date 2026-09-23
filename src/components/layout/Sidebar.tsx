@@ -26,6 +26,7 @@ import {
   Settings as SettingsIcon,
   UserCheck
 } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface SidebarProps {
   activeTab: string;
@@ -195,22 +196,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Top Header & Organization Profile Card */}
       <div className="flex flex-col">
         {/* Brand Header */}
-        <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
+        <div className="p-3.5 border-b border-slate-800/80 flex items-center justify-between">
           {!collapsed ? (
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
-                <ShieldAlert className="w-4 h-4" />
-              </div>
-              <div>
-                <div className="font-black text-sm tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-400">
-                  CYBERSHIELD<span className="text-cyan-400">.AI</span>
-                </div>
-                <div className="text-[10px] text-slate-400 font-mono">ENTERPRISE SOC</div>
-              </div>
-            </div>
+            <BrandLogo
+              size="sm"
+              showText={true}
+              showSubtitle={false}
+              showBadge={true}
+              badgeText="SOC"
+              onClick={() => setActiveTab('dashboard')}
+            />
           ) : (
-            <div className="w-8 h-8 mx-auto rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-white shadow-md shadow-cyan-500/20">
-              <ShieldAlert className="w-4 h-4" />
+            <div className="mx-auto" onClick={() => setActiveTab('dashboard')}>
+              <BrandLogo
+                size="xs"
+                showText={false}
+              />
             </div>
           )}
 

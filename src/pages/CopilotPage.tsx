@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { ApiKeyConfigModal } from '../components/copilot/ApiKeyConfigModal';
 import { CopilotMessage } from '../services/aiCopilotService';
+import { BrandLogo } from '../components/common/BrandLogo';
 
 export const CopilotPage: React.FC = () => {
   const {
@@ -102,8 +103,8 @@ export const CopilotPage: React.FC = () => {
                   </>
                 ) : (
                   <>
-                    <Bot className="w-3.5 h-3.5 text-cyan-400" />
-                    <span className="text-cyan-400 font-bold">CyberShield AI</span>
+                    <BrandLogo size="xs" showText={false} />
+                    <span className="text-cyan-400 font-bold">CyberShield.AI</span>
                   </>
                 )}
                 <span>•</span>

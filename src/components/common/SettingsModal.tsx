@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSecurity } from '../../context/SecurityContext';
 import { Settings, X, Key, Shield, Database, RefreshCw, CheckCircle2, Lock } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -36,9 +37,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({ isOpen, onClose })
         {/* Header */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-              <Settings className="w-5 h-5" />
-            </div>
+            <BrandLogo size="xs" showText={false} />
             <div>
               <h3 className="text-lg font-bold text-white">Platform Settings & Integrations</h3>
               <p className="text-xs text-slate-400">CyberShield.AI Enterprise Command Configuration</p>

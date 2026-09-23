@@ -12,6 +12,7 @@ import {
   Radio,
   FileCheck2
 } from 'lucide-react';
+import { BrandLogo } from './BrandLogo';
 
 interface HelpGuideModalProps {
   isOpen: boolean;
@@ -30,9 +31,7 @@ export const HelpGuideModal: React.FC<HelpGuideModalProps> = ({ isOpen, onClose 
           {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-800">
             <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400">
-                <Zap className="w-5 h-5" />
-              </div>
+              <BrandLogo size="xs" showText={false} />
               <div>
                 <h3 className="text-lg font-bold text-white">SIH 2026 5-Minute Judge Demonstration Script</h3>
                 <p className="text-xs text-slate-400">CyberShield.AI • AICTE Cyber Security Cell</p>

@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useSecurity } from '../../context/SecurityContext';
 import { Sparkles, Send, X, Bot, User, RefreshCw, ChevronRight, Shield } from 'lucide-react';
+import { BrandLogo } from '../common/BrandLogo';
 
 interface AIChatDrawerProps {
   isOpen: boolean;
@@ -42,12 +43,10 @@ export const AIChatDrawer: React.FC<AIChatDrawerProps> = ({ isOpen, onClose }) =
       {/* Header */}
       <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/60">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 text-cyan-400 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 animate-spin" style={{ animationDuration: '8s' }} />
-          </div>
+          <BrandLogo size="xs" showText={false} />
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white">CyberShield AI Copilot</h2>
+              <h2 className="text-sm font-bold text-white">CyberShield.AI Copilot</h2>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-mono bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 font-bold">
                 GROUNDED
               </span>
