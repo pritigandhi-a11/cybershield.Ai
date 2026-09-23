@@ -130,7 +130,7 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const local = localStorage.getItem('CYBERSHIELD_AUTH');
     const sess = sessionStorage.getItem('CYBERSHIELD_AUTH');
-    return local === 'true' || sess === 'true' || true; // Default logged in for instant judge view, toggleable
+    return local === 'true' || sess === 'true';
   });
 
   const [currentIndustry, setCurrentIndustry] = useState<IndustryType>(() => {
