@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useSecurity } from '../../context/SecurityContext';
 import { IndustryType } from '../../types/organization';
 import {
@@ -10,19 +10,33 @@ import {
   Key,
   Radio,
   SlidersHorizontal,
-  ChevronDown
+  ChevronDown,
+  User,
+  LogOut,
+  Settings as SettingsIcon,
+  HelpCircle,
+  Menu,
+  X,
+  Award,
+  ShieldCheck,
+  Zap,
+  Flame,
+  CheckCircle2
 } from 'lucide-react';
 import { ATTACK_SCENARIOS } from '../../services/telemetryService';
 import { ApiKeyConfigModal } from '../copilot/ApiKeyConfigModal';
 import { AuditCertificateModal } from '../blockchain/AuditCertificateModal';
+import { HelpGuideModal } from '../common/HelpGuideModal';
+import { SettingsModal } from '../common/SettingsModal';
 
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   openCopilotDrawer: () => void;
+  toggleMobileMenu?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer }) => {
+export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer, toggleMobileMenu }) => {
   const {
     organization,
     currentIndustry,
@@ -31,14 +45,40 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer 
     commitAuditSnapshot,
     isCommittingBlock,
     simulateAttack,
-    geminiApiKey
+    geminiApiKey,
+    currentUser,
+    logout
   } = useSecurity();
 
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
   const [showSimDropdown, setShowSimDropdown] = useState(false);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [snapshotSuccess, setSnapshotSuccess] = useState(false);
+
+  const orgMenuRef = useRef<HTMLDivElement>(null);
+  const simMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdowns when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (orgMenuRef.current && !orgMenuRef.current.contains(event.target as Node)) {
+        setShowOrgDropdown(false);
+      }
+      if (simMenuRef.current && !simMenuRef.current.contains(event.target as Node)) {
+        setShowSimDropdown(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setShowUserDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleTakeSnapshot = async () => {
     await commitAuditSnapshot('CONTINUOUS_TELEMETRY_SNAP');
@@ -46,56 +86,92 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer 
     setTimeout(() => setSnapshotSuccess(false), 3000);
   };
 
-  const industries: { key: IndustryType; label: string; icon: string }[] = [
-    { key: 'BANKING_FINTECH', label: 'Banking & FinTech (RBI CSF)', icon: '🏦' },
-    { key: 'HEALTHCARE', label: 'Healthcare & Hospital (HIPAA/DISHA)', icon: '🏥' },
-    { key: 'ENTERPRISE_SAAS', label: 'Enterprise SaaS (SOC2/ISO 27001)', icon: '☁️' },
-    { key: 'HIGHER_EDUCATION', label: 'Higher Education (NIST/UGC)', icon: '🎓' },
-    { key: 'CRITICAL_INFRASTRUCTURE', label: 'Critical Energy Grid (NCIIPC)', icon: '⚡' },
+  const industries: { key: IndustryType; label: string; icon: string; budget: string; compliance: string }[] = [
+    { key: 'BANKING_FINTECH', label: 'Bharat NeoBank & FinTech', icon: '🏦', budget: '₹5.0L', compliance: 'RBI CSF • PCI-DSS' },
+    { key: 'HEALTHCARE', label: 'Apex SuperSpecialty Hospital', icon: '🏥', budget: '₹4.0L', compliance: 'HIPAA • DISHA' },
+    { key: 'HIGHER_EDUCATION', label: 'NIST University Campus', icon: '🎓', budget: '₹3.0L', compliance: 'NIST • UGC' },
+    { key: 'CRITICAL_INFRASTRUCTURE', label: 'GridPower Energy & SCADA', icon: '⚡', budget: '₹7.5L', compliance: 'NCIIPC • CEA' },
+    { key: 'ENTERPRISE_SAAS', label: 'CloudScale Multi-Tenant SaaS', icon: '☁️', budget: '₹6.0L', compliance: 'SOC 2 • ISO 27001' },
   ];
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full border-b border-slate-800/90 bg-[#030712]/90 backdrop-blur-md px-4 lg:px-6 py-3">
-        <div className="flex items-center justify-between gap-4">
-          {/* Brand Logo & Name */}
+      <header className="sticky top-0 z-40 w-full border-b border-slate-800/90 bg-[#030712]/95 backdrop-blur-xl px-4 lg:px-6 py-2.5">
+        <div className="flex items-center justify-between gap-3">
+          
+          {/* Left: Mobile Hamburger & Brand/Org Info */}
           <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
-              <ShieldAlert className="w-5 h-5 animate-pulse" />
-              <div className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold tracking-tight text-lg bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
-                  CyberShield<span className="text-cyan-400">.AI</span>
-                </span>
-                <span className="px-2 py-0.5 text-[10px] font-mono uppercase font-bold tracking-wider rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
-                  QUANT-ENGINE v2.4
-                </span>
+            {toggleMobileMenu && (
+              <button
+                onClick={toggleMobileMenu}
+                className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-300 lg:hidden"
+                title="Toggle Mobile Menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Brand Logo & Name */}
+            <div className="flex items-center gap-2.5">
+              <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-lg shadow-cyan-500/10">
+                <ShieldAlert className="w-4 h-4 animate-pulse" />
+                <div className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-cyan-400 animate-ping" />
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
-                Continuous Cyber Risk Quantification & Risk-to-Rupee Optimizer
-              </p>
+              <div className="hidden sm:block">
+                <div className="flex items-center gap-2">
+                  <span className="font-extrabold tracking-tight text-base bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
+                    CyberShield<span className="text-cyan-400">.AI</span>
+                  </span>
+                  <span className="px-1.5 py-0.2 text-[9px] font-mono uppercase font-bold rounded border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
+                    SIH 2026
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400 truncate max-w-[220px]">
+                  Continuous Cyber Risk Quantification
+                </p>
+              </div>
+            </div>
+
+            {/* Vertical Divider */}
+            <div className="hidden xl:block h-6 w-px bg-slate-800" />
+
+            {/* Prominent Active Organization Badge */}
+            <div className="hidden md:flex items-center gap-2 bg-slate-900/90 border border-slate-800/90 px-3 py-1.5 rounded-xl">
+              <Building2 className="w-3.5 h-3.5 text-cyan-400 flex-shrink-0" />
+              <div className="text-left truncate max-w-[200px] lg:max-w-[280px]">
+                <div className="font-bold text-xs text-white truncate">{organization.name}</div>
+                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 font-mono">
+                  <span className="text-cyan-400 font-medium">{organization.industryLabel}</span>
+                  <span>•</span>
+                  <span className="text-emerald-400">● LIVE</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Industry Preset Selector */}
-          <div className="hidden md:flex items-center gap-2">
-            <div className="relative">
-              <button
-                onClick={() => setShowOrgDropdown(!showOrgDropdown)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 transition-colors"
-              >
-                <Building2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="truncate max-w-[190px]">{organization.name}</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
+          {/* Center: Fast Organization Selector Dropdown */}
+          <div className="relative" ref={orgMenuRef}>
+            <button
+              onClick={() => setShowOrgDropdown(!showOrgDropdown)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-900/90 border border-slate-700 hover:border-cyan-500/50 text-slate-200 transition-all shadow-sm"
+              title="Switch Organization Profile"
+            >
+              <span className="text-sm">
+                {industries.find(i => i.key === currentIndustry)?.icon || '🏦'}
+              </span>
+              <span className="truncate max-w-[130px] sm:max-w-[180px] font-medium">
+                {organization.name}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showOrgDropdown ? 'rotate-180' : ''}`} />
+            </button>
 
-              {showOrgDropdown && (
-                <div className="absolute left-0 mt-2 w-72 rounded-xl bg-slate-900/95 border border-slate-700 shadow-2xl p-1.5 z-50 backdrop-blur-xl">
-                  <div className="px-2 py-1.5 text-[10px] font-mono uppercase text-slate-400 border-b border-slate-800">
-                    Switch Industry Preset
-                  </div>
+            {showOrgDropdown && (
+              <div className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-80 rounded-2xl bg-slate-900/95 border border-slate-700 shadow-2xl p-2 z-50 backdrop-blur-2xl animate-fade-in">
+                <div className="px-3 py-2 text-[10px] font-mono uppercase font-bold text-slate-400 border-b border-slate-800 mb-1 flex items-center justify-between">
+                  <span>Switch Organization Profile</span>
+                  <span className="text-cyan-400">5 Sector Presets</span>
+                </div>
+                <div className="space-y-1">
                   {industries.map(ind => (
                     <button
                       key={ind.key}
@@ -103,55 +179,69 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer 
                         setIndustry(ind.key);
                         setShowOrgDropdown(false);
                       }}
-                      className={`w-full text-left flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-colors ${
+                      className={`w-full text-left p-2.5 rounded-xl transition-all ${
                         currentIndustry === ind.key
-                          ? 'bg-cyan-500/20 text-cyan-300 font-semibold border border-cyan-500/30'
-                          : 'text-slate-300 hover:bg-slate-800'
+                          ? 'bg-cyan-500/15 text-cyan-300 font-semibold border border-cyan-500/40 shadow-sm'
+                          : 'text-slate-300 hover:bg-slate-800/80 border border-transparent'
                       }`}
                     >
-                      <span className="text-sm">{ind.icon}</span>
-                      <span className="truncate">{ind.label}</span>
+                      <div className="flex items-center justify-between text-xs font-semibold mb-0.5">
+                        <span className="flex items-center gap-2">
+                          <span>{ind.icon}</span>
+                          <span className="truncate">{ind.label}</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-cyan-400">{ind.budget}</span>
+                      </div>
+                      <div className="text-[10px] text-slate-400 pl-6 font-mono">
+                        {ind.compliance}
+                      </div>
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
 
-          {/* Quick Action Controls */}
-          <div className="flex items-center gap-2">
-            {/* Live Attack Simulator Trigger */}
-            <div className="relative">
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            
+            {/* Live Threat Simulator Trigger */}
+            <div className="relative" ref={simMenuRef}>
               <button
                 onClick={() => setShowSimDropdown(!showSimDropdown)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all"
-                title="Inject live cyber attack telemetry to test dynamic risk engine"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold bg-red-500/10 border border-red-500/30 text-red-300 hover:bg-red-500/20 transition-all shadow-sm"
+                title="Simulate live cyber attack telemetry to test dynamic risk spike"
               >
                 <Radio className="w-3.5 h-3.5 text-red-400 animate-pulse" />
-                <span className="hidden sm:inline">Simulate Attack</span>
+                <span className="hidden sm:inline">Simulate Threat</span>
               </button>
 
               {showSimDropdown && (
-                <div className="absolute right-0 mt-2 w-80 rounded-xl bg-slate-900 border border-red-500/30 shadow-2xl p-2 z-50">
-                  <div className="px-2 py-1 text-[11px] font-bold text-red-300 uppercase tracking-wider border-b border-slate-800 mb-1">
-                    ⚡ Live Threat Injection Scenarios
+                <div className="absolute right-0 mt-2 w-80 rounded-2xl bg-slate-900 border border-red-500/30 shadow-2xl p-2.5 z-50 backdrop-blur-2xl animate-fade-in">
+                  <div className="px-2 py-1.5 text-[10.5px] font-bold text-red-300 uppercase tracking-wider border-b border-slate-800 mb-1 flex items-center justify-between">
+                    <span className="flex items-center gap-1.5">
+                      <Flame className="w-3.5 h-3.5 text-red-400" />
+                      Live Attack Injection (SIH Demo)
+                    </span>
                   </div>
-                  {ATTACK_SCENARIOS.map(scen => (
-                    <button
-                      key={scen.id}
-                      onClick={() => {
-                        simulateAttack(scen);
-                        setShowSimDropdown(false);
-                      }}
-                      className="w-full text-left p-2.5 rounded-lg hover:bg-red-500/10 transition-colors border border-transparent hover:border-red-500/20 mb-1 group"
-                    >
-                      <div className="text-xs font-semibold text-slate-200 group-hover:text-red-300 flex items-center justify-between">
-                        <span>{scen.name}</span>
-                        <span className="text-[10px] font-mono text-red-400 font-bold">+{scen.expectedRiskIncrease} pts</span>
-                      </div>
-                      <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{scen.description}</p>
-                    </button>
-                  ))}
+                  <div className="space-y-1">
+                    {ATTACK_SCENARIOS.map(scen => (
+                      <button
+                        key={scen.id}
+                        onClick={() => {
+                          simulateAttack(scen);
+                          setShowSimDropdown(false);
+                        }}
+                        className="w-full text-left p-2.5 rounded-xl hover:bg-red-500/15 transition-colors border border-transparent hover:border-red-500/30 group"
+                      >
+                        <div className="text-xs font-semibold text-slate-200 group-hover:text-red-300 flex items-center justify-between">
+                          <span>{scen.name}</span>
+                          <span className="text-[10px] font-mono text-red-400 font-bold">+{scen.expectedRiskIncrease} pts</span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 line-clamp-2 mt-0.5">{scen.description}</p>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -160,49 +250,102 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer 
             <button
               onClick={handleTakeSnapshot}
               disabled={isCommittingBlock}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+              className={`hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all ${
                 snapshotSuccess
                   ? 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300'
-                  : 'bg-slate-800/80 border-slate-700 hover:border-cyan-500/50 text-slate-200'
+                  : 'bg-slate-900/90 border-slate-700 hover:border-cyan-500/50 text-slate-200'
               }`}
-              title="Generate SHA-256 cryptographic snapshot and commit to audit ledger"
+              title="Generate SHA-256 cryptographic snapshot and commit to blockchain audit ledger"
             >
               <FileCheck className={`w-3.5 h-3.5 ${isCommittingBlock ? 'animate-spin text-cyan-400' : 'text-emerald-400'}`} />
-              <span className="hidden md:inline">
-                {snapshotSuccess ? 'Snapshot Anchored!' : isCommittingBlock ? 'Hashing...' : 'Anchor Audit Hash'}
+              <span>
+                {snapshotSuccess ? 'Snapshot Anchored!' : isCommittingBlock ? 'Hashing...' : 'Anchor Hash'}
               </span>
             </button>
 
-            {/* Blockchain Certificate */}
-            <button
-              onClick={() => setShowCertModal(true)}
-              className="p-1.5 rounded-lg text-xs bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-300"
-              title="View Tamper-Evident Assessment Certificate"
-            >
-              <SlidersHorizontal className="w-4 h-4 text-cyan-400" />
-            </button>
-
-            {/* Gemini API Key */}
-            <button
-              onClick={() => setShowKeyModal(true)}
-              className={`p-1.5 rounded-lg text-xs border transition-colors ${
-                geminiApiKey
-                  ? 'bg-cyan-500/10 border-cyan-500/40 text-cyan-300'
-                  : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-slate-200'
-              }`}
-              title="Configure Gemini API Key / Settings"
-            >
-              <Key className="w-4 h-4" />
-            </button>
-
-            {/* AI Copilot Trigger */}
+            {/* Grounded AI Copilot Trigger */}
             <button
               onClick={openCopilotDrawer}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:brightness-110 transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-md shadow-cyan-500/20 hover:shadow-cyan-500/40 transition-all cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5 animate-spin text-cyan-200" style={{ animationDuration: '6s' }} />
-              <span>AI Copilot</span>
+              <Sparkles className="w-3.5 h-3.5 text-cyan-200 animate-spin" style={{ animationDuration: '6s' }} />
+              <span className="hidden sm:inline">AI Copilot</span>
             </button>
+
+            {/* User Profile Menu Dropdown */}
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setShowUserDropdown(!showUserDropdown)}
+                className="flex items-center gap-1.5 p-1 sm:px-2.5 sm:py-1 rounded-xl bg-slate-900 border border-slate-700 hover:border-slate-600 text-slate-200 transition-colors"
+                title="User Profile & System Menu"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-cyan-600 to-indigo-600 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                  {currentUser?.name ? currentUser.name.charAt(0) : 'P'}
+                </div>
+                <ChevronDown className="w-3 h-3 text-slate-400 hidden sm:block" />
+              </button>
+
+              {showUserDropdown && (
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-900/95 border border-slate-700 shadow-2xl p-2 z-50 backdrop-blur-2xl animate-fade-in text-xs">
+                  {/* User Profile Header */}
+                  <div className="p-3 border-b border-slate-800 mb-1">
+                    <div className="font-bold text-white text-sm">{currentUser?.name || 'Preeti Gandhi'}</div>
+                    <div className="text-[11px] text-cyan-300 font-medium">{currentUser?.role || 'CISO Staff'}</div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{organization.name}</div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="space-y-0.5">
+                    <button
+                      onClick={() => {
+                        setShowCertModal(true);
+                        setShowUserDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-left"
+                    >
+                      <Award className="w-4 h-4 text-cyan-400" />
+                      <span>Audit Certificate</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowSettingsModal(true);
+                        setShowUserDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-left"
+                    >
+                      <SettingsIcon className="w-4 h-4 text-slate-400" />
+                      <span>Platform Settings</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowHelpModal(true);
+                        setShowUserDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-colors text-left"
+                    >
+                      <HelpCircle className="w-4 h-4 text-purple-400" />
+                      <span>SIH 2026 Presentation Guide</span>
+                    </button>
+
+                    <div className="border-t border-slate-800 my-1" />
+
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowUserDropdown(false);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-red-400 hover:bg-red-500/15 transition-colors text-left font-semibold"
+                    >
+                      <LogOut className="w-4 h-4 text-red-400" />
+                      <span>Sign Out / Switch User</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
         </div>
       </header>
@@ -210,6 +353,8 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer 
       {/* Modals */}
       <ApiKeyConfigModal isOpen={showKeyModal} onClose={() => setShowKeyModal(false)} />
       <AuditCertificateModal isOpen={showCertModal} onClose={() => setShowCertModal(false)} />
+      <HelpGuideModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
+      <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
     </>
   );
 };

@@ -34,6 +34,17 @@ import {
 } from '../types/ingestion';
 
 interface SecurityContextType {
+  // Authentication & Session
+  isAuthenticated: boolean;
+  currentUser: {
+    name: string;
+    email: string;
+    role: string;
+    organizationId: IndustryType;
+  } | null;
+  login: (industry: IndustryType, email?: string, role?: string, rememberMe?: boolean) => void;
+  logout: () => void;
+
   // Organization
   currentIndustry: IndustryType;
   organization: OrganizationProfile;
@@ -93,10 +104,41 @@ interface SecurityContextType {
 const SecurityContext = createContext<SecurityContextType | null>(null);
 
 export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [currentIndustry, setCurrentIndustry] = useState<IndustryType>('BANKING_FINTECH');
+  // Authentication & Session
+  const [currentUser, setCurrentUser] = useState<{
+    name: string;
+    email: string;
+    role: string;
+    organizationId: IndustryType;
+  } | null>(() => {
+    const saved = localStorage.getItem('CYBERSHIELD_USER') || sessionStorage.getItem('CYBERSHIELD_USER');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return {
+      name: 'Preeti Gandhi',
+      email: 'p.gandhi@aicte-india.org',
+      role: 'Chief Information Security Officer (CISO)',
+      organizationId: 'BANKING_FINTECH'
+    };
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const local = localStorage.getItem('CYBERSHIELD_AUTH');
+    const sess = sessionStorage.getItem('CYBERSHIELD_AUTH');
+    return local === 'true' || sess === 'true' || true; // Default logged in for instant judge view, toggleable
+  });
+
+  const [currentIndustry, setCurrentIndustry] = useState<IndustryType>(() => {
+    return currentUser?.organizationId || 'BANKING_FINTECH';
+  });
   const organization = useMemo(() => INDUSTRY_PRESETS[currentIndustry], [currentIndustry]);
 
-  const [assets, setAssets] = useState<SecurityAsset[]>(INITIAL_ASSETS.BANKING_FINTECH);
+  const [assets, setAssets] = useState<SecurityAsset[]>(() => INITIAL_ASSETS[currentIndustry] || INITIAL_ASSETS.BANKING_FINTECH);
   const [vulnerabilities, setVulnerabilities] = useState<Vulnerability[]>(INITIAL_VULNERABILITIES);
   const [incidents, setIncidents] = useState<IncidentAlert[]>(INITIAL_INCIDENTS);
   const [controls, setControls] = useState<SecurityControlStatus[]>(INITIAL_CONTROLS);
@@ -155,6 +197,35 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setTelemetryEvents(repoEvents.length > 0 ? repoEvents : getInitialTelemetryEvents());
     setBudgetINR(org.baseBudgetINR);
     setIsManualSelection(false);
+  }, []);
+
+  const login = useCallback((industry: IndustryType, email?: string, role?: string, rememberMe: boolean = true) => {
+    const org = INDUSTRY_PRESETS[industry];
+    const user = {
+      name: email && email.includes('@') ? email.split('@')[0].replace(/[\._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Preeti Gandhi',
+      email: email || `ciso@${org.id.replace('org-', '')}.gov.in`,
+      role: role || 'Chief Information Security Officer (CISO)',
+      organizationId: industry
+    };
+    setCurrentUser(user);
+    setIsAuthenticated(true);
+    setIndustry(industry);
+    if (rememberMe) {
+      localStorage.setItem('CYBERSHIELD_AUTH', 'true');
+      localStorage.setItem('CYBERSHIELD_USER', JSON.stringify(user));
+    } else {
+      sessionStorage.setItem('CYBERSHIELD_AUTH', 'true');
+      sessionStorage.setItem('CYBERSHIELD_USER', JSON.stringify(user));
+    }
+  }, [setIndustry]);
+
+  const logout = useCallback(() => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    localStorage.removeItem('CYBERSHIELD_AUTH');
+    localStorage.removeItem('CYBERSHIELD_USER');
+    sessionStorage.removeItem('CYBERSHIELD_AUTH');
+    sessionStorage.removeItem('CYBERSHIELD_USER');
   }, []);
 
   // Initialize blockchain ledger on mount
@@ -484,6 +555,10 @@ export const SecurityProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   return (
     <SecurityContext.Provider
       value={{
+        isAuthenticated,
+        currentUser,
+        login,
+        logout,
         currentIndustry,
         organization,
         setIndustry,
