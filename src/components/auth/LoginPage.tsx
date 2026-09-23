@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSecurity } from '../../context/SecurityContext';
 import { IndustryType } from '../../types/organization';
 import { INDUSTRY_PRESETS } from '../../services/organizationData';
@@ -17,7 +17,9 @@ import {
   Coins,
   ShieldCheck,
   Zap,
-  Info
+  Info,
+  Server,
+  Globe2
 } from 'lucide-react';
 
 interface LoginPageProps {
@@ -26,6 +28,7 @@ interface LoginPageProps {
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const { login } = useSecurity();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [selectedOrg, setSelectedOrg] = useState<IndustryType>('BANKING_FINTECH');
   const [email, setEmail] = useState<string>('p.gandhi@aicte-india.org');
@@ -35,6 +38,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showForgotModal, setShowForgotModal] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string>('');
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const orgList: { key: IndustryType; name: string; industry: string; icon: string; budget: string }[] = [
     {
@@ -74,10 +78,109 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }
   ];
 
+  // 3D Canvas CyberShield Core Animation on Left
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    let animId: number;
+    let rotation = 0;
+
+    // Outer node particles
+    const nodes = Array.from({ length: 24 }, (_, i) => ({
+      angle: (i / 24) * Math.PI * 2,
+      radius: 80 + (i % 3) * 15,
+      speed: (i % 2 === 0 ? 0.008 : -0.008),
+      size: (i % 4 === 0 ? 4.5 : 2.5),
+      color: (i % 4 === 0 ? '#38bdf8' : i % 3 === 0 ? '#818cf8' : '#34d399')
+    }));
+
+    const render = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cx = canvas.width / 2;
+      const cy = canvas.height / 2;
+
+      rotation += 0.01;
+
+      const tiltX = (mousePos.y / 200) * 0.25;
+      const tiltY = (mousePos.x / 200) * 0.25;
+
+      // Outer glowing radial background
+      const grad = ctx.createRadialGradient(cx, cy, 10, cx, cy, 110);
+      grad.addColorStop(0, 'rgba(6, 182, 212, 0.25)');
+      grad.addColorStop(0.6, 'rgba(99, 102, 241, 0.08)');
+      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 110, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Draw 3D Orbital Rings
+      const drawRing = (rx: number, ry: number, rot: number, stroke: string, lw: number) => {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(rot + tiltY);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, tiltX, 0, Math.PI * 2);
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lw;
+        ctx.stroke();
+        ctx.restore();
+      };
+
+      drawRing(95, 36, rotation * 0.8, 'rgba(56, 189, 248, 0.45)', 1.5);
+      drawRing(90, 30, -rotation * 0.6 + Math.PI / 3, 'rgba(99, 102, 241, 0.35)', 1.2);
+      drawRing(82, 40, rotation * 0.4 - Math.PI / 4, 'rgba(52, 211, 153, 0.3)', 1.0);
+
+      // Connected nodes
+      nodes.forEach(n => {
+        n.angle += n.speed;
+        const nx = cx + Math.cos(n.angle + rotation) * n.radius;
+        const ny = cy + Math.sin(n.angle + rotation) * (n.radius * 0.45);
+
+        // Line to center
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(nx, ny);
+        ctx.strokeStyle = 'rgba(56, 189, 248, 0.15)';
+        ctx.lineWidth = 0.8;
+        ctx.stroke();
+
+        // Node circle
+        ctx.beginPath();
+        ctx.arc(nx, ny, n.size, 0, Math.PI * 2);
+        ctx.fillStyle = n.color;
+        ctx.shadowColor = n.color;
+        ctx.shadowBlur = 6;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+
+      // Central Pulsing Shield Emblem
+      const pulse = Math.sin(rotation * 3) * 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy, 26 + pulse, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(6, 182, 212, 0.5)';
+      ctx.shadowColor = '#38bdf8';
+      ctx.shadowBlur = 15;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      animId = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      cancelAnimationFrame(animId);
+    };
+  }, [mousePos]);
+
   // Update default email when organization changes
   const handleOrgChange = (newOrg: IndustryType) => {
     setSelectedOrg(newOrg);
-    const org = INDUSTRY_PRESETS[newOrg];
     if (newOrg === 'BANKING_FINTECH') {
       setEmail('ciso@neobank.in');
     } else if (newOrg === 'HEALTHCARE') {
@@ -122,22 +225,33 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
     }, 300);
   };
 
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setMousePos({
+      x: e.clientX - (rect.left + rect.width / 2),
+      y: e.clientY - (rect.top + rect.height / 2)
+    });
+  };
+
   return (
-    <div className="min-h-screen w-full bg-[#030712] text-slate-100 flex items-center justify-center p-4 lg:p-8 relative overflow-hidden font-sans selection:bg-cyan-500/30 selection:text-cyan-200">
-      {/* Dynamic Background Network Glows */}
+    <div
+      onMouseMove={handleMouseMove}
+      className="min-h-screen w-full bg-[#020617] text-slate-100 flex items-center justify-center p-4 lg:p-8 relative overflow-hidden font-sans selection:bg-cyan-500/30 selection:text-cyan-200"
+    >
+      {/* Dynamic 3D Background Glows */}
       <div className="absolute -top-40 -left-40 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-blue-600/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] bg-blue-600/5 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Main Split Container */}
-      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl border border-slate-800/80 bg-slate-950/70 shadow-2xl backdrop-blur-2xl overflow-hidden relative z-10">
+      {/* Main Split 3D Container */}
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 rounded-3xl border border-slate-800/90 bg-slate-950/80 shadow-2xl backdrop-blur-2xl overflow-hidden relative z-10">
         
-        {/* Left Column: CyberShield.AI Visual Hero Section */}
-        <div className="lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80 bg-gradient-to-br from-slate-900/90 via-slate-950/90 to-[#030712] relative overflow-hidden">
-          {/* Subtle Grid Graphic Background */}
-          <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(#38bdf8_1px,transparent_1px)] [background-size:20px_20px] pointer-events-none" />
+        {/* Left Column: 3D Cybersecurity Visualization */}
+        <div className="lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-slate-800/80 bg-gradient-to-br from-slate-900/90 via-slate-950/90 to-[#020617] relative overflow-hidden">
+          {/* Cyber Grid Texture */}
+          <div className="absolute inset-0 cyber-grid-bg opacity-30 pointer-events-none" />
 
-          {/* Top Brand Header */}
+          {/* Top Brand Info */}
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
               <div className="relative flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-500/25 to-blue-600/30 border border-cyan-500/40 text-cyan-400 shadow-xl shadow-cyan-500/20">
@@ -146,14 +260,14 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="font-extrabold tracking-tight text-2xl bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
+                  <span className="font-black tracking-tight text-2xl bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-100 to-cyan-300">
                     CyberShield<span className="text-cyan-400">.AI</span>
                   </span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold tracking-wider rounded-md border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
+                  <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md border border-cyan-500/30 bg-cyan-500/10 text-cyan-300">
                     SIH 2026
                   </span>
                 </div>
-                <p className="text-xs text-slate-400 font-medium">Enterprise Cyber Risk Command Center</p>
+                <p className="text-xs text-slate-400 font-medium">3D Enterprise Cyber Risk Command Center</p>
               </div>
             </div>
 
@@ -161,69 +275,54 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
               Continuous Cyber Risk Quantification & <span className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400">Risk-to-Rupee</span> Optimization
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed max-w-lg">
-              Deterministic mathematical risk quantification (0–100), bounded knapsack capital allocation, and cryptographic Merkle blockchain audit anchoring for Indian critical sectors.
+              Deterministic mathematical risk modeling ($0–100$), bounded knapsack capital allocation, and cryptographic Merkle blockchain audit anchoring for Indian critical sectors.
             </p>
           </div>
 
-          {/* Center Graphic / Network Visualization */}
-          <div className="my-8 relative z-10 p-5 rounded-2xl bg-slate-900/60 border border-slate-800/80 backdrop-blur-md">
-            <div className="flex items-center justify-between text-xs text-slate-400 mb-3 border-b border-slate-800/80 pb-2">
-              <span className="flex items-center gap-2 font-mono text-[11px] text-cyan-400">
-                <Activity className="w-3.5 h-3.5 animate-spin" style={{ animationDuration: '4s' }} />
-                REAL-TIME TELEMETRY STREAM
+          {/* 3D Security Core Canvas */}
+          <div className="my-6 relative z-10 flex flex-col items-center justify-center p-4 rounded-2xl bg-slate-950/70 border border-slate-800/90 shadow-xl backdrop-blur-md">
+            <canvas
+              ref={canvasRef}
+              width={340}
+              height={160}
+              className="w-full max-w-xs transition-transform duration-200"
+              style={{
+                transform: `perspective(600px) rotateX(${-mousePos.y * 0.04}deg) rotateY(${mousePos.x * 0.04}deg)`
+              }}
+            />
+            <div className="flex items-center justify-between w-full text-[10.5px] font-mono text-slate-400 pt-2 border-t border-slate-800/80">
+              <span className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
+                QUANT CORE ONLINE
               </span>
-              <span className="font-mono text-[10px] text-emerald-400 font-semibold flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                QUANT ENGINE ONLINE
-              </span>
-            </div>
-
-            {/* Visual Node Grid */}
-            <div className="grid grid-cols-2 gap-3 text-xs">
-              <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90">
-                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
-                  <Cpu className="w-3 h-3 text-cyan-400" />
-                  <span>Deterministic Engine</span>
-                </div>
-                <div className="text-sm font-bold text-white font-mono">6-Factor Model</div>
-                <div className="text-[10px] text-cyan-400/80 mt-0.5">Vuln • Threat • Asset • Control</div>
-              </div>
-
-              <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/90">
-                <div className="text-[10px] text-slate-400 flex items-center gap-1.5 mb-1">
-                  <Coins className="w-3 h-3 text-emerald-400" />
-                  <span>Risk-to-Rupee Solver</span>
-                </div>
-                <div className="text-sm font-bold text-emerald-300 font-mono">Knapsack ROI</div>
-                <div className="text-[10px] text-emerald-400/80 mt-0.5">Points Reduction / ₹1 Lakh</div>
-              </div>
+              <span className="text-emerald-400 font-bold">SHA-256 MERKLE ANCHORED</span>
             </div>
           </div>
 
           {/* Bottom Capability Badges */}
-          <div className="relative z-10 pt-4 border-t border-slate-800/60 flex flex-wrap items-center gap-2 text-xs">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-cyan-950/60 border border-cyan-800/50 text-cyan-300 font-medium">
+          <div className="relative z-10 pt-2 border-t border-slate-800/60 flex flex-wrap items-center gap-2 text-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-cyan-950/60 border border-cyan-800/50 text-cyan-300 font-medium shadow-sm">
               <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" /> Continuous Monitoring
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-purple-950/60 border border-purple-800/50 text-purple-300 font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-purple-950/60 border border-purple-800/50 text-purple-300 font-medium shadow-sm">
               <Sparkles className="w-3.5 h-3.5 text-purple-400" /> Risk Intelligence
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-950/60 border border-emerald-800/50 text-emerald-300 font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-950/60 border border-emerald-800/50 text-emerald-300 font-medium shadow-sm">
               <Coins className="w-3.5 h-3.5 text-emerald-400" /> Budget Optimization
             </span>
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-indigo-950/60 border border-indigo-800/50 text-indigo-300 font-medium">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-indigo-950/60 border border-indigo-800/50 text-indigo-300 font-medium shadow-sm">
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" /> Merkle Audit Proof
             </span>
           </div>
         </div>
 
-        {/* Right Column: Clean Enterprise Sign In Card */}
+        {/* Right Column: Clean 3D Glass Sign In Panel */}
         <div className="lg:col-span-6 p-8 lg:p-12 flex flex-col justify-between bg-slate-950/90 relative">
           <div>
             <div className="mb-6">
               <h3 className="text-2xl font-bold text-white tracking-tight">Welcome to CyberShield.AI</h3>
               <p className="text-xs sm:text-sm text-slate-400 mt-1.5">
-                Sign in to access your organization's continuous cyber risk command center.
+                Sign in to access your organization's 3D continuous cyber risk command center.
               </p>
             </div>
 
@@ -286,7 +385,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   <button
                     type="button"
                     onClick={() => setShowForgotModal(true)}
-                    className="text-[11px] text-cyan-400 hover:text-cyan-300 hover:underline"
+                    className="text-[11px] text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer"
                   >
                     Forgot passphrase?
                   </button>
@@ -305,7 +404,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200"
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-200 cursor-pointer"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -334,11 +433,11 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 {isLoading ? (
                   <>
                     <Activity className="w-4 h-4 animate-spin text-cyan-200" />
-                    <span>Authenticating & Loading Telemetry...</span>
+                    <span>Authenticating & Loading 3D Telemetry...</span>
                   </>
                 ) : (
                   <>
-                    <span>Sign In to Command Center</span>
+                    <span>Sign In to 3D Command Center</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
@@ -361,7 +460,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                 <button
                   key={org.key}
                   onClick={() => handleQuickDemoSwitch(org.key)}
-                  className="p-2 rounded-lg bg-slate-900/80 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 text-left transition-all group"
+                  className="p-2 rounded-xl bg-slate-900/80 hover:bg-cyan-950/60 border border-slate-800 hover:border-cyan-500/50 text-left transition-all group cursor-pointer"
                   title={`Launch Command Center for ${org.name}`}
                 >
                   <div className="text-[11px] font-semibold text-slate-200 group-hover:text-cyan-300 truncate flex items-center gap-1">
@@ -393,7 +492,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed">
-              In this demonstration environment, default administrator credentials are pre-filled. To authenticate with any institutional profile, simply select the organization and click <strong>"Sign In to Command Center"</strong> or use the <strong>1-Click Judge Fast Switcher</strong>.
+              In this demonstration environment, default administrator credentials are pre-filled. To authenticate with any institutional profile, simply select the organization and click <strong>"Sign In to 3D Command Center"</strong> or use the <strong>1-Click Judge Fast Switcher</strong>.
             </p>
 
             <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-1">
@@ -404,7 +503,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             <div className="pt-2 flex justify-end">
               <button
                 onClick={() => setShowForgotModal(false)}
-                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors"
+                className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs transition-colors cursor-pointer"
               >
                 Understood, Return to Login
               </button>

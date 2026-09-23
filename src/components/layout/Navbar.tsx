@@ -28,6 +28,7 @@ import { ApiKeyConfigModal } from '../copilot/ApiKeyConfigModal';
 import { AuditCertificateModal } from '../blockchain/AuditCertificateModal';
 import { HelpGuideModal } from '../common/HelpGuideModal';
 import { SettingsModal } from '../common/SettingsModal';
+import { OrganizationSelector3DModal } from '../3d/OrganizationSelector3DModal';
 
 interface NavbarProps {
   activeTab: string;
@@ -51,6 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer,
   } = useSecurity();
 
   const [showOrgDropdown, setShowOrgDropdown] = useState(false);
+  const [showOrg3DModal, setShowOrg3DModal] = useState(false);
   const [showSimDropdown, setShowSimDropdown] = useState(false);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [showKeyModal, setShowKeyModal] = useState(false);
@@ -197,6 +199,19 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer,
                       </div>
                     </button>
                   ))}
+                </div>
+
+                <div className="pt-2 mt-1 border-t border-slate-800">
+                  <button
+                    onClick={() => {
+                      setShowOrgDropdown(false);
+                      setShowOrg3DModal(true);
+                    }}
+                    className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/40 text-cyan-300 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Launch 3D Organization Matrix</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -355,6 +370,7 @@ export const Navbar: React.FC<NavbarProps> = ({ setActiveTab, openCopilotDrawer,
       <AuditCertificateModal isOpen={showCertModal} onClose={() => setShowCertModal(false)} />
       <HelpGuideModal isOpen={showHelpModal} onClose={() => setShowHelpModal(false)} />
       <SettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} />
+      <OrganizationSelector3DModal isOpen={showOrg3DModal} onClose={() => setShowOrg3DModal(false)} />
     </>
   );
 };

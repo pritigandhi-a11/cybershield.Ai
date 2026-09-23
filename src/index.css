@@ -4,56 +4,148 @@
 
 @layer base {
   body {
-    @apply bg-[#030712] text-slate-100 font-sans antialiased;
+    @apply bg-[#020617] text-slate-100 font-sans antialiased;
     background-image: 
-      radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.05) 0%, transparent 40%),
-      radial-gradient(circle at 85% 85%, rgba(239, 68, 68, 0.04) 0%, transparent 40%),
-      linear-gradient(to bottom, #030712, #0b0f19);
+      radial-gradient(circle at 10% 10%, rgba(14, 165, 233, 0.07) 0%, transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(244, 63, 94, 0.05) 0%, transparent 45%),
+      radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.03) 0%, transparent 60%),
+      linear-gradient(to bottom, #020617, #070d1e, #020617);
     min-height: 100vh;
   }
 }
 
-/* Custom Cyber Glass Cards */
-.cyber-card {
-  @apply bg-slate-900/70 backdrop-blur-md border border-slate-800/80 rounded-xl transition-all duration-200;
+/* 3D Transform & Perspective Utilities */
+.perspective-1000 {
+  perspective: 1000px;
 }
 
-.cyber-card:hover {
-  @apply border-slate-700/80;
+.perspective-1500 {
+  perspective: 1500px;
 }
 
-.cyber-card-glow {
-  @apply bg-slate-900/80 backdrop-blur-md border border-cyan-500/20 rounded-xl shadow-lg shadow-cyan-950/20 transition-all duration-300;
+.perspective-2000 {
+  perspective: 2000px;
 }
 
-.cyber-card-glow:hover {
-  @apply border-cyan-500/40 shadow-cyan-900/30;
+.preserve-3d {
+  transform-style: preserve-3d;
 }
 
-.cyber-card-critical {
-  @apply bg-slate-900/80 backdrop-blur-md border border-red-500/30 rounded-xl shadow-lg shadow-red-950/20 transition-all duration-300;
+.backface-hidden {
+  backface-visibility: hidden;
 }
 
-.cyber-card-critical:hover {
-  @apply border-red-500/50 shadow-red-900/30;
+/* 3D Glass Surface Cards */
+.cyber-card-3d {
+  @apply bg-slate-900/75 backdrop-blur-xl border border-slate-800/80 rounded-2xl transition-all duration-300;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 1px 1px rgba(255, 255, 255, 0.05) inset;
+  transform-style: preserve-3d;
+}
+
+.cyber-card-3d:hover {
+  @apply border-cyan-500/40;
+  box-shadow: 0 20px 40px -15px rgba(6, 182, 212, 0.2), 0 0 20px -5px rgba(6, 182, 212, 0.15), 0 0 1px 1px rgba(255, 255, 255, 0.1) inset;
+  transform: translateY(-3px) scale(1.008);
+}
+
+.cyber-card-3d-danger {
+  @apply bg-slate-900/80 backdrop-blur-xl border border-rose-500/30 rounded-2xl transition-all duration-300;
+  box-shadow: 0 10px 30px -10px rgba(225, 29, 72, 0.25), 0 0 1px 1px rgba(255, 255, 255, 0.05) inset;
+  transform-style: preserve-3d;
+}
+
+.cyber-card-3d-danger:hover {
+  @apply border-rose-500/60;
+  box-shadow: 0 20px 45px -12px rgba(225, 29, 72, 0.4), 0 0 25px -5px rgba(225, 29, 72, 0.25);
+  transform: translateY(-3px) scale(1.008);
+}
+
+.cyber-card-3d-emerald {
+  @apply bg-slate-900/80 backdrop-blur-xl border border-emerald-500/30 rounded-2xl transition-all duration-300;
+  box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.2), 0 0 1px 1px rgba(255, 255, 255, 0.05) inset;
+  transform-style: preserve-3d;
+}
+
+.cyber-card-3d-emerald:hover {
+  @apply border-emerald-500/60;
+  box-shadow: 0 20px 45px -12px rgba(16, 185, 129, 0.35);
+  transform: translateY(-3px) scale(1.008);
+}
+
+/* 3D Metallic Reflective Borders */
+.cyber-metallic-border {
+  border-image: linear-gradient(to bottom right, rgba(56, 189, 248, 0.6), rgba(99, 102, 241, 0.2), rgba(255, 255, 255, 0.05)) 1;
+}
+
+/* Holographic Floating Keyframes */
+@keyframes float3D {
+  0%, 100% {
+    transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotateX(2deg) rotateY(1deg);
+  }
+}
+
+@keyframes orbit3D {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulseGlow3D {
+  0%, 100% {
+    filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 30px rgba(6, 182, 212, 0.8));
+  }
+}
+
+.animate-float-3d {
+  animation: float3D 6s ease-in-out infinite;
+}
+
+.animate-orbit-3d {
+  animation: orbit3D 20s linear infinite;
+}
+
+.animate-radar-sweep {
+  animation: radarSweep 4s linear infinite;
+}
+
+.animate-pulse-glow-3d {
+  animation: pulseGlow3D 3s ease-in-out infinite;
 }
 
 /* Grid overlay background */
 .cyber-grid-bg {
-  background-size: 32px 32px;
+  background-size: 36px 36px;
   background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px);
 }
 
-/* Custom Scrollbars */
+/* Custom 3D Scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #090d16;
+  background: #020617;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -62,5 +154,5 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #334155;
+  background: #38bdf8;
 }
